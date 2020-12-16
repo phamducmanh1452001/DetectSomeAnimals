@@ -42,7 +42,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="160" height="60"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add a photo" lineBreakMode="wordWrap" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Qi-dr-0Cy">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add a photo" lineBreakMode="wordWrap" numberOfLines="12" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Qi-dr-0Cy">
                                             <rect key="frame" x="10" y="10" width="140" height="40"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                             <nil key="textColor"/>
@@ -58,7 +58,7 @@
                                 </view>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="60" id="Ddv-hz-oCd"/>
-                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="240" id="G8g-AA-tiM"/>
+                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="360" id="G8g-AA-tiM"/>
                                     <constraint firstAttribute="width" constant="160" id="r9s-Tn-mHP"/>
                                 </constraints>
                                 <blurEffect style="extraLight"/>

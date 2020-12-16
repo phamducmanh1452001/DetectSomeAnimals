@@ -17,13 +17,29 @@ final class ImageClassificationViewController: UIViewController {
     @IBOutlet weak var classificationLabel: UILabel!
     @IBOutlet weak var cameraButton: UILabel!
     @IBOutlet weak var visualView: UIVisualEffectView!
+    var resultAnimal: String = "Dog"
     
-    lazy private var classificationRequest: VNCoreMLRequest = {
+    lazy private var infoClassificationRequest: VNCoreMLRequest = {
         do {
             let model = try VNCoreMLModel(for: AnimalsImageClassifier_1().model)
             
             let request = VNCoreMLRequest(model: model) { [weak self] request, error in
                 self?.processClassifications(for: request, error: error)
+            }
+            request.imageCropAndScaleOption = .centerCrop
+            return request
+            
+        } catch {
+            fatalError("Failed to load Vision ML model: \(error)")
+        }
+    }()
+    
+    lazy private var detectClassification: VNCoreMLRequest = {
+        do {
+            let model = try VNCoreMLModel(for: DetectImageClassifier_2().model)
+            
+            let request = VNCoreMLRequest(model: model) { [weak self] request, error in
+                self?.detectClassifications(for: request, error: error)
             }
             request.imageCropAndScaleOption = .centerCrop
             return request
@@ -50,9 +66,39 @@ final class ImageClassificationViewController: UIViewController {
         DispatchQueue.global(qos: .default).async {
             let handler = VNImageRequestHandler(ciImage: ciImage, orientation: orientation)
             do {
-                try handler.perform([self.classificationRequest])
+                try handler.perform([self.infoClassificationRequest])
+                try handler.perform([self.detectClassification])
             } catch {
                 print("Failed to perform classification.\n\(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func detectClassifications(for request: VNRequest, error: Error?) {
+        DispatchQueue.main.async {
+            guard let results = request.results else {
+                self.classificationLabel.text = "Unable to classify image.\n\(error!.localizedDescription)"
+                return
+            }
+
+            let classifications = results as! [VNClassificationObservation]
+        
+            if classifications.isEmpty {
+                self.classificationLabel.text = "Nothing recognized."
+            } else {
+                let topClassifications = classifications.prefix(6)
+                self.classificationLabel.text! += "\nResult: \(self.resultAnimal)"
+                
+                topClassifications.forEach { value in
+                    if value.identifier == "Animals" {
+                        if value.confidence >= 0.99 {
+                            self.classificationLabel.text = "Model cannot \ndetect animal \nin this image"
+                            return
+                        }
+                    }
+                }
+                
+                print(self.classificationLabel.text!)
             }
         }
     }
@@ -70,10 +116,16 @@ final class ImageClassificationViewController: UIViewController {
                 self.classificationLabel.text = "Nothing recognized."
             } else {
                 let topClassifications = classifications.prefix(6)
-                let descriptions = topClassifications.map { classification in
-                   return String(format: " %@: %.0f %%", classification.identifier ,classification.confidence * 100)
+                var valueMax: Float = 0, animal: String = ""
+                let descriptions: [String] = topClassifications.map { classification in
+                    if valueMax < classification.confidence {
+                        animal = classification.identifier
+                        valueMax = classification.confidence
+                    }
+                    return String(format: " %@: %.0f %%", classification.identifier ,classification.confidence * 100)
                 }
-                self.classificationLabel.text = "Classification:\n" + descriptions.joined(separator: "\n")
+                self.classificationLabel.text = "Info:\n" + descriptions.joined(separator: "\n")
+                self.resultAnimal = animal
             }
         }
     }
@@ -113,6 +165,7 @@ extension ImageClassificationViewController: UIImagePickerControllerDelegate, UI
         
         let image = info[UIImagePickerController.InfoKey(rawValue: UIImagePickerController.InfoKey.originalImage.rawValue)] as! UIImage
         imageView.image = image
+        //imageView.contentMode = .scaleAspectFill
         updateClassifications(for: image)
     }
     
